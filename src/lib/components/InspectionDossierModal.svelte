@@ -186,6 +186,35 @@
 						</div>
 					</section>
 
+					<section class="dossier-section">
+						<h3>5. Registro Probatorio de Supresiones y Revocaciones (Art. 7)</h3>
+						<p class="dossier-lead">
+							Certificados inmutables que acreditan la eliminación definitiva de datos identificatorios en bases comerciales ante solicitud del titular, conservando resguardo legal únicamente en bases obligatorias:
+						</p>
+						<table class="dossier-table">
+							<thead>
+								<tr>
+									<th>Certificado</th>
+									<th>Titular Anonimizado</th>
+									<th>Alcance y Resolución Legal</th>
+									<th>Fecha ISO</th>
+									<th>Huella SHA-256</th>
+								</tr>
+							</thead>
+							<tbody>
+								{#each $lexdataStore.suppressions.slice(0, 5) as sup (sup.id)}
+									<tr>
+										<td class="font-mono tabular">{sup.code}</td>
+										<td class="font-mono tabular">{sup.titularMasked}</td>
+										<td>{sup.legalBasisResolution}</td>
+										<td class="font-mono tabular">{sup.executedAtIso}</td>
+										<td class="font-mono">{sup.erasureSha256.slice(0, 18)}…</td>
+									</tr>
+								{/each}
+							</tbody>
+						</table>
+					</section>
+
 					<footer class="dossier-footer">
 						<div>
 							<strong>Implementación Jurídica:</strong> {$lexdataStore.governance.legalImplementation}

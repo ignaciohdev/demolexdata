@@ -11,10 +11,12 @@
 		Globe,
 		Clock,
 		ArrowRight,
-		AlertCircle
+		AlertCircle,
+		Trash2,
+		Send
 	} from 'lucide-svelte';
 	import { lexdataStore } from '#lib/stores/lexdataStore.ts';
-	import type { ProspectRecord } from '#lib/types/lexdata.ts';
+	import type { ProspectRecord, SuppressionRecord } from '#lib/types/lexdata.ts';
 	import { formatDateTimeCL, maskFullName, maskRut } from '#lib/utils/formatters.ts';
 
 	let fullName = $state('');
@@ -30,6 +32,8 @@
 	let formError = $state('');
 	let submitting = $state(false);
 	let latestCertificate = $state<ProspectRecord | null>(null);
+	let latestSuppression = $state<SuppressionRecord | null>(null);
+	let derivationNotice = $state('');
 	let exportSuccessMessage = $state('');
 
 	const isRestricted = $derived($lexdataStore.sessionRole === 'comercial');
@@ -83,6 +87,18 @@
 
 	async function handleEncryptedCall(prospect: ProspectRecord) {
 		await lexdataStore.registerEncryptedCall(prospect);
+	}
+
+	async function handleSuppressProspect(prospect: ProspectRecord) {
+		if (isRestricted) return;
+		derivationNotice = '';
+		latestSuppression = await lexdataStore.executeProspectSuppression(prospect);
+	}
+
+	function handleDeriveSuppression(prospect: ProspectRecord) {
+		latestSuppression = null;
+		const req = lexdataStore.requestProspectSuppression(prospect);
+		derivationNotice = `Solicitud ${req.code} (${maskFullName(prospect.fullName)}) derivada a la Bandeja ARSOPB del DPO Externo. Plazo legal: 30 días.`;
 	}
 
 	function handleExportCsv() {
@@ -361,6 +377,29 @@
 				</div>
 			{/if}
 
+			{#if derivationNotice}
+				<div class="derivation-toast" transition:fade={{ duration: 150 }}>
+					<Send size={15} strokeWidth={1.5} />
+					<span>{derivationNotice}</span>
+				</div>
+			{/if}
+
+			{#if latestSuppression}
+				<div class="suppression-toast" transition:fly={{ y: -6, duration: 180 }}>
+					<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+						<strong>Certificado de Supresión Emitido · {latestSuppression.code}</strong>
+						<span class="badge badge-legal">Art. 7 Cumplido</span>
+					</div>
+					<div style="font-size: 12px; color: var(--text-secondary);">
+						Titular anonimizado: <span class="font-mono">{latestSuppression.titularMasked}</span> ·
+						{latestSuppression.legalBasisResolution}
+					</div>
+					<div class="font-mono" style="font-size: 11px; color: var(--text-primary); word-break: break-all;">
+						SHA-256 Eliminación: {latestSuppression.erasureSha256}
+					</div>
+				</div>
+			{/if}
+
 			<div class="table-wrap">
 				<table class="data-table">
 					<thead>
@@ -369,59 +408,127 @@
 							<th>Contacto</th>
 							<th>Consentimiento</th>
 							<th>Evidencia</th>
+							<th>Derecho Supresión</th>
 						</tr>
 					</thead>
 					<tbody>
-						{#each $lexdataStore.prospects as prospect (prospect.id)}
+						{#if $lexdataStore.prospects.length === 0}
 							<tr>
-								<td>
-									<div style="font-weight: 600;">
-										{isRestricted ? maskFullName(prospect.fullName) : prospect.fullName}
-									</div>
-									<div class="font-mono tabular" style="font-size: 11.5px; color: var(--text-secondary);">
-										{isRestricted ? maskRut(prospect.rut) : prospect.rut}
-									</div>
-								</td>
-								<td>
-									{#if isRestricted}
-										<button
-											type="button"
-											class="btn btn-secondary btn-sm"
-											onclick={() => handleEncryptedCall(prospect)}
-										>
-											<PhoneCall size={13} strokeWidth={1.5} />
-											Llamar vía Central Encriptada
-										</button>
-									{:else}
-										<div class="font-mono tabular" style="font-size: 12px;">{prospect.phone}</div>
-										<div style="font-size: 11.5px; color: var(--text-secondary);">{prospect.email}</div>
-									{/if}
-								</td>
-								<td>
-									<div class="consent-pills">
-										{#if prospect.consentQuote}
-											<span class="badge badge-legal">Cotización</span>
-										{/if}
-										{#if prospect.consentMarketing}
-											<span class="badge badge-neutral">Campañas</span>
-										{/if}
-										{#if prospect.consentFinancial}
-											<span class="badge badge-alert">Crédito</span>
-										{/if}
-									</div>
-								</td>
-								<td>
-									<div class="font-mono tabular" style="font-size: 11px; color: var(--text-secondary);">
-										{prospect.sha256Hash.slice(0, 12)}…
-									</div>
-									<div style="font-size: 11px; color: var(--text-muted);">
-										IP {prospect.ipAddress}
-									</div>
+								<td colspan="5" style="text-align: center; padding: 24px; color: var(--text-secondary);">
+									No quedan titulares activos en la base comercial. Registre un nuevo prospecto o restaure los datos demo.
 								</td>
 							</tr>
-						{/each}
+						{:else}
+							{#each $lexdataStore.prospects as prospect (prospect.id)}
+								<tr>
+									<td>
+										<div style="font-weight: 600;">
+											{isRestricted ? maskFullName(prospect.fullName) : prospect.fullName}
+										</div>
+										<div class="font-mono tabular" style="font-size: 11.5px; color: var(--text-secondary);">
+											{isRestricted ? maskRut(prospect.rut) : prospect.rut}
+										</div>
+									</td>
+									<td>
+										{#if isRestricted}
+											<button
+												type="button"
+												class="btn btn-secondary btn-sm"
+												onclick={() => handleEncryptedCall(prospect)}
+											>
+												<PhoneCall size={13} strokeWidth={1.5} />
+												Llamar vía Central Encriptada
+											</button>
+										{:else}
+											<div class="font-mono tabular" style="font-size: 12px;">{prospect.phone}</div>
+											<div style="font-size: 11.5px; color: var(--text-secondary);">{prospect.email}</div>
+										{/if}
+									</td>
+									<td>
+										<div class="consent-pills">
+											{#if prospect.consentQuote}
+												<span class="badge badge-legal">Cotización</span>
+											{/if}
+											{#if prospect.consentMarketing}
+												<span class="badge badge-neutral">Campañas</span>
+											{/if}
+											{#if prospect.consentFinancial}
+												<span class="badge badge-alert">Crédito</span>
+											{/if}
+										</div>
+									</td>
+									<td>
+										<div class="font-mono tabular" style="font-size: 11px; color: var(--text-secondary);">
+											{prospect.sha256Hash.slice(0, 12)}…
+										</div>
+										<div style="font-size: 11px; color: var(--text-muted);">
+											IP {prospect.ipAddress}
+										</div>
+									</td>
+									<td>
+										{#if isRestricted}
+											<button
+												type="button"
+												class="btn btn-secondary btn-sm"
+												onclick={() => handleDeriveSuppression(prospect)}
+											>
+												<Send size={13} strokeWidth={1.5} />
+												Derivar al DPO
+											</button>
+										{:else}
+											<button
+												type="button"
+												class="btn btn-danger btn-sm"
+												onclick={() => handleSuppressProspect(prospect)}
+											>
+												<Trash2 size={13} strokeWidth={1.5} />
+												Suprimir (Art. 7)
+											</button>
+										{/if}
+									</td>
+								</tr>
+							{/each}
+						{/if}
 					</tbody>
 				</table>
+			</div>
+		</section>
+
+		<section class="card">
+			<div class="card-header">
+				<div>
+					<h2 class="card-title">Registro Probatorio de Supresiones Ejecutadas (Art. 7)</h2>
+					<p class="card-subtitle">
+						Evidencia no identificable de eliminación en CRM comercial y bloqueo en bases legales
+					</p>
+				</div>
+				<span class="badge badge-legal tabular">{$lexdataStore.suppressions.length} certificados</span>
+			</div>
+			<div class="card-body">
+				<ul class="call-log-list">
+					{#each $lexdataStore.suppressions as sup (sup.id)}
+						<li class="call-log-item" transition:fade={{ duration: 150 }}>
+							<div style="min-width: 0;">
+								<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+									<span class="font-mono" style="font-size: 11.5px; font-weight: 600;">{sup.code}</span>
+									<strong class="font-mono tabular">{sup.titularMasked}</strong>
+								</div>
+								<div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+									{sup.legalBasisResolution}
+								</div>
+								<div class="font-mono" style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+									SHA-256: {sup.erasureSha256.slice(0, 24)}…
+								</div>
+							</div>
+							<div style="text-align: right; flex-shrink: 0;">
+								<div class="font-mono tabular" style="font-size: 11.5px;">
+									{formatDateTimeCL(sup.executedAtIso)}
+								</div>
+								<span class="badge badge-legal" style="margin-top: 4px;">Eliminado CRM</span>
+							</div>
+						</li>
+					{/each}
+				</ul>
 			</div>
 		</section>
 
@@ -577,6 +684,29 @@
 		color: var(--accent-legal);
 		font-size: 12.5px;
 		font-weight: 600;
+	}
+
+	.derivation-toast {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 10px 18px;
+		background-color: var(--accent-alert-bg);
+		border-bottom: 1px solid var(--accent-alert-border);
+		color: var(--accent-alert);
+		font-size: 12.5px;
+		font-weight: 600;
+	}
+
+	.suppression-toast {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		padding: 12px 18px;
+		background-color: var(--accent-legal-bg);
+		border-bottom: 1px solid var(--accent-legal-border);
+		color: var(--text-primary);
+		font-size: 12.5px;
 	}
 
 	.consent-pills {

@@ -256,14 +256,36 @@
 								</div>
 							</td>
 							<td>
-								<span class="badge {req.daysRemaining <= 2 ? 'badge-alert' : 'badge-legal'}">
-									{req.status}
-								</span>
+								<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 6px;">
+									<span
+										class="badge {req.status === 'Supresión Ejecutada'
+											? 'badge-legal'
+											: req.daysRemaining <= 2
+												? 'badge-alert'
+												: 'badge-legal'}"
+									>
+										{req.status}
+									</span>
+									{#if req.rightType === 'Supresión' && req.status !== 'Supresión Ejecutada' && !isRestricted}
+										<button
+											type="button"
+											class="btn btn-danger btn-sm"
+											onclick={() => lexdataStore.executeArsopbSuppression(req.id)}
+										>
+											Ejecutar Supresión
+										</button>
+									{/if}
+								</div>
 							</td>
 						</tr>
 					{/each}
 				</tbody>
 			</table>
+		</div>
+		<div class="arsopb-card-footer">
+			<span class="font-mono tabular" style="font-size: 11.5px; color: var(--text-secondary);">
+				{$lexdataStore.suppressions.length} certificado(s) de supresión SHA-256 emitidos (Art. 7 Ley 21.719)
+			</span>
 		</div>
 	</div>
 
@@ -304,6 +326,11 @@
 					{/each}
 				</tbody>
 			</table>
+		</div>
+		<div class="arsopb-card-footer">
+			<span class="font-mono tabular" style="font-size: 11.5px; color: var(--text-secondary);">
+				{$lexdataStore.suppressions.length} certificado(s) de supresión SHA-256 emitidos (Art. 7 Ley 21.719)
+			</span>
 		</div>
 	</div>
 </section>
@@ -397,6 +424,12 @@
 
 	.nowrap-cell {
 		white-space: nowrap;
+	}
+
+	.arsopb-card-footer {
+		padding: 10px 16px;
+		border-top: 1px solid var(--border-subtle);
+		background-color: var(--bg-surface-muted);
 	}
 
 	.footprint-grid {

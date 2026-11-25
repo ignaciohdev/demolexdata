@@ -24,7 +24,20 @@ export interface ArsopbRequest {
 	receivedAt: string;
 	legalDeadlineDays: number;
 	daysRemaining: number;
-	status: 'En Revisión DPO' | 'En Plazo Legal';
+	status: 'En Revisión DPO' | 'En Plazo Legal' | 'Supresión Ejecutada';
+	prospectId?: string;
+}
+
+export interface SuppressionRecord {
+	id: string;
+	code: string;
+	titularMasked: string;
+	databaseScope: string;
+	reason: string;
+	legalBasisResolution: string;
+	executedByRole: string;
+	executedAtIso: string;
+	erasureSha256: string;
 }
 
 export interface TechnicalCheck {
@@ -105,4 +118,5 @@ export interface LexDataState {
 	baseCompliantWorkers: number;
 	workers: WorkerHygieneRecord[];
 	breaches: BreachReport[];
+	suppressions: SuppressionRecord[];
 }

@@ -1,14 +1,16 @@
 import { derived, writable } from 'svelte/store';
 import type {
+	ArsopbRequest,
 	BreachReport,
 	BreachType,
 	CallAuditLog,
 	LexDataState,
 	ProspectRecord,
 	SessionRole,
-	SubscriptionStatus
+	SubscriptionStatus,
+	SuppressionRecord
 } from '#lib/types/lexdata.ts';
-import { fallbackHexHash, generateSha256, maskFullName } from '#lib/utils/formatters.ts';
+import { fallbackHexHash, generateSha256, maskFullName, maskRut } from '#lib/utils/formatters.ts';
 
 export const BRAND_NAME = 'LexData';
 
@@ -261,7 +263,21 @@ function createInitialState(): LexDataState {
 				legalStatus: 'Pendiente'
 			}
 		],
-		breaches: []
+		breaches: [],
+		suppressions: [
+			{
+				id: 'sup-00',
+				code: 'CERT-SUP-21719-019',
+				titularMasked: 'Lucía F. (••.•••.304-9)',
+				databaseScope: 'Base de Leads Comerciales (CRM)',
+				reason: 'Revocación de consentimiento comercial solicitada por el titular',
+				legalBasisResolution:
+					'Supresión total en CRM ejecutada. Libro de Obras y RR.HH. sin registros del titular.',
+				executedByRole: 'DPO Externo Independiente',
+				executedAtIso: '2026-11-19T14:22:08-03:00',
+				erasureSha256: '7c2e9a41b80f3d5612e49a80c17f5e2390b1d4a8c6e72f1093a4d8b5e1c0f732'
+			}
+		]
 	};
 }
 
@@ -278,10 +294,14 @@ function loadInitialState(): LexDataState {
 			parsed.arsopbRequests.every((r) => typeof r.requesterName === 'string' && typeof r.requesterRut === 'string')
 				? parsed.arsopbRequests
 				: fallback.arsopbRequests;
+		const validSuppressions = Array.isArray(parsed.suppressions)
+			? parsed.suppressions
+			: fallback.suppressions;
 		return {
 			...fallback,
 			...parsed,
 			arsopbRequests: validArsopb,
+			suppressions: validSuppressions,
 			organization: { ...fallback.organization, ...(parsed.organization ?? {}) },
 			governance: { ...fallback.governance, ...(parsed.governance ?? {}) }
 		};
@@ -425,6 +445,120 @@ function createLexDataStore() {
 				)
 			}));
 		},
+		requestProspectSuppression(prospect: ProspectRecord): ArsopbRequest {
+			const nowIso = new Date().toISOString();
+			const req: ArsopbRequest = {
+				id: `arsopb-${Date.now()}`,
+				code: `SOL-21719-${String(Date.now()).slice(-3)}`,
+				rightType: 'Supresión',
+				requesterName: prospect.fullName,
+				requesterRut: prospect.rut,
+				receivedAt: nowIso,
+				legalDeadlineDays: 30,
+				daysRemaining: 30,
+				status: 'En Revisión DPO',
+				prospectId: prospect.id
+			};
+
+			commit((state) => ({
+				...state,
+				arsopbRequests: [req, ...state.arsopbRequests.filter((r) => r.prospectId !== prospect.id)]
+			}));
+
+			return req;
+		},
+		async executeProspectSuppression(
+			prospect: ProspectRecord,
+			reason = 'Solicitud expresa de supresión y revocación de consentimiento (Art. 7 Ley 21.719)'
+		): Promise<SuppressionRecord> {
+			const executedAtIso = new Date().toISOString();
+			const titularMasked = `${maskFullName(prospect.fullName)} (${maskRut(prospect.rut)})`;
+			const code = `CERT-SUP-21719-${String(Date.now()).slice(-3)}`;
+			const erasureSha256 = await generateSha256(
+				JSON.stringify({
+					code,
+					titularMasked,
+					executedAtIso,
+					orgRut: '76.543.210-8',
+					action: 'SUPRESION_CRM_ART_7'
+				})
+			);
+
+			const record: SuppressionRecord = {
+				id: `sup-${Date.now()}`,
+				code,
+				titularMasked,
+				databaseScope: 'Base de Leads Comerciales (CRM)',
+				reason,
+				legalBasisResolution:
+					'Datos identificatorios eliminados del CRM. Bases con obligación legal (Libro de Obras 5–10 años / RR.HH. 2 años) permanecen resguardadas y bloqueadas para uso comercial.',
+				executedByRole: 'Gerencia / DPO Externo Independiente',
+				executedAtIso,
+				erasureSha256
+			};
+
+			commit((state) => ({
+				...state,
+				prospects: state.prospects.filter((p) => p.id !== prospect.id),
+				arsopbRequests: state.arsopbRequests.map((r) =>
+					r.prospectId === prospect.id ? { ...r, status: 'Supresión Ejecutada' } : r
+				),
+				suppressions: [record, ...state.suppressions]
+			}));
+
+			return record;
+		},
+		async executeArsopbSuppression(requestId: string): Promise<SuppressionRecord | null> {
+			let targetReq: ArsopbRequest | undefined;
+			let linkedProspect: ProspectRecord | undefined;
+
+			const unsubscribe = subscribe((s) => {
+				targetReq = s.arsopbRequests.find((r) => r.id === requestId);
+				if (targetReq?.prospectId) {
+					linkedProspect = s.prospects.find((p) => p.id === targetReq?.prospectId);
+				}
+			});
+			unsubscribe();
+
+			if (!targetReq) return null;
+
+			if (linkedProspect) {
+				return this.executeProspectSuppression(
+					linkedProspect,
+					`Resolución solicitud ARSOPB ${targetReq.code} (Art. 7 Ley 21.719)`
+				);
+			}
+
+			const executedAtIso = new Date().toISOString();
+			const titularMasked = `${maskFullName(targetReq.requesterName)} (${maskRut(targetReq.requesterRut)})`;
+			const code = `CERT-SUP-21719-${String(Date.now()).slice(-3)}`;
+			const erasureSha256 = await generateSha256(
+				`${code}:${targetReq.code}:${executedAtIso}:76.543.210-8`
+			);
+
+			const record: SuppressionRecord = {
+				id: `sup-${Date.now()}`,
+				code,
+				titularMasked,
+				databaseScope: 'Base de Leads Comerciales (CRM)',
+				reason: `Resolución solicitud ARSOPB ${targetReq.code}`,
+				legalBasisResolution:
+					'Supresión ejecutada en base comercial. Bases bajo obligación legal vigente permanecen bloqueadas comercialmente.',
+				executedByRole: 'Gerencia / DPO Externo Independiente',
+				executedAtIso,
+				erasureSha256
+			};
+
+			commit((state) => ({
+				...state,
+				arsopbRequests: state.arsopbRequests.map((r) =>
+					r.id === requestId ? { ...r, status: 'Supresión Ejecutada' } : r
+				),
+				suppressions: [record, ...state.suppressions]
+			}));
+
+			return record;
+		},
 		resetDemoData() {
 			const fresh = createInitialState();
 			if (typeof window !== 'undefined') {
@@ -450,7 +584,10 @@ export const lexdataMetrics = derived(lexdataStore, ($state) => {
 	const activeBreaches = $state.breaches.filter((b) => b.status === 'Alerta 72h Activa');
 
 	const baseScore = 37 + compliantWorkersCount; // 37 + 47 = 84% inicial exacto
-	const extraConsentBonus = Math.min(3, Math.max(0, $state.prospects.length - 3));
+	const extraConsentBonus = Math.min(
+		3,
+		Math.max(0, $state.prospects.length + $state.suppressions.length - 4)
+	);
 	const breachPenalty = activeBreaches.length > 0 ? 12 : 0;
 	const suspensionPenalty = $state.subscriptionStatus === 'suspended' ? 20 : 0;
 
@@ -497,7 +634,8 @@ export const lexdataMetrics = derived(lexdataStore, ($state) => {
 		complianceTone,
 		fineExposureLabel,
 		fineExposureMeta,
-		activeArsopbCount: $state.arsopbRequests.length,
+		activeArsopbCount: $state.arsopbRequests.filter((r) => r.status !== 'Supresión Ejecutada')
+			.length,
 		technicalChecksCount: $state.technicalChecks.length,
 		verificationSealHash
 	};
