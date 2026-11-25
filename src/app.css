@@ -1,0 +1,921 @@
+/* ==========================================================================
+   LexData — Swiss Legal Editorial Design System (Native CSS Tokens)
+   Estética institucional: Stripe / Carta / Banca Suiza
+   ========================================================================== */
+
+:root {
+	/* Paleta Principal */
+	--bg-canvas: #F7F6F2;
+	--bg-surface: #FFFFFF;
+	--bg-surface-muted: #FAF9F6;
+	--bg-sidebar: #121619;
+	--bg-sidebar-hover: #1C2227;
+	--bg-sidebar-active: #232A30;
+
+	/* Tipografía y Texto */
+	--text-primary: #121619;
+	--text-secondary: #525860;
+	--text-muted: #727982;
+	--text-inverse: #F7F6F2;
+	--text-sidebar-muted: #9AA2AC;
+
+	/* Bordes y Grilla Suiza */
+	--border-subtle: #E2DFD7;
+	--border-strong: #C9C4B8;
+	--border-sidebar: #262C32;
+
+	/* Acentos Institucionales */
+	--accent-legal: #0F5132;
+	--accent-legal-hover: #0B3E26;
+	--accent-legal-bg: #EBF5F0;
+	--accent-legal-border: #BBDAC9;
+
+	--accent-alert: #B45309;
+	--accent-alert-bg: #FDF5EB;
+	--accent-alert-border: #E8C79B;
+
+	--accent-danger: #991B1B;
+	--accent-danger-bg: #FCEEEE;
+	--accent-danger-border: #E5B5B5;
+
+	/* Familias Tipográficas */
+	--font-serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+	--font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+	--font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+	/* Geometría Sobria (4px - 6px máximo) */
+	--radius-sm: 4px;
+	--radius-md: 6px;
+
+	/* Dimensiones Shell */
+	--sidebar-width: 268px;
+	--topbar-height: 64px;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+	background-color: var(--bg-canvas);
+	color: var(--text-primary);
+	font-family: var(--font-sans);
+	font-size: 14px;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+	margin: 0;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+	font-family: inherit;
+	font-size: inherit;
+	color: inherit;
+}
+
+/* Utilidades Tipográficas */
+.font-serif {
+	font-family: var(--font-serif);
+}
+
+.font-mono {
+	font-family: var(--font-mono);
+}
+
+.tabular {
+	font-variant-numeric: tabular-nums;
+}
+
+/* ==========================================================================
+   Shell de Aplicación (Sidebar + Topbar + Canvas)
+   ========================================================================== */
+
+.app-shell {
+	display: grid;
+	grid-template-columns: var(--sidebar-width) 1fr;
+	min-height: 100vh;
+	background-color: var(--bg-canvas);
+}
+
+.sidebar {
+	background-color: var(--bg-sidebar);
+	color: var(--text-inverse);
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	border-right: 1px solid var(--border-sidebar);
+	position: sticky;
+	top: 0;
+	height: 100vh;
+	z-index: 20;
+}
+
+.sidebar-brand {
+	padding: 22px 20px 18px;
+	border-bottom: 1px solid var(--border-sidebar);
+}
+
+.brand-mark {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.brand-monogram {
+	width: 30px;
+	height: 30px;
+	border-radius: var(--radius-sm);
+	border: 1px solid rgba(255, 255, 255, 0.22);
+	background-color: rgba(15, 81, 50, 0.45);
+	color: #ECFDF5;
+	display: grid;
+	place-items: center;
+	flex-shrink: 0;
+}
+
+.brand-name {
+	font-family: var(--font-serif);
+	font-size: 20px;
+	font-weight: 600;
+	letter-spacing: -0.01em;
+	color: #FFFFFF;
+	line-height: 1.1;
+}
+
+.brand-subtitle {
+	font-family: var(--font-mono);
+	font-size: 10.5px;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--text-sidebar-muted);
+	margin-top: 6px;
+}
+
+.sidebar-org {
+	padding: 14px 20px;
+	border-bottom: 1px solid var(--border-sidebar);
+	background-color: rgba(255, 255, 255, 0.02);
+}
+
+.sidebar-org-label {
+	font-size: 10px;
+	font-family: var(--font-mono);
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--text-sidebar-muted);
+	margin-bottom: 4px;
+}
+
+.sidebar-org-name {
+	font-size: 12.5px;
+	font-weight: 600;
+	color: #F7F6F2;
+	line-height: 1.35;
+}
+
+.sidebar-org-meta {
+	font-family: var(--font-mono);
+	font-size: 11px;
+	color: var(--text-sidebar-muted);
+	margin-top: 4px;
+}
+
+.sidebar-nav {
+	padding: 14px 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	flex: 1;
+	overflow-y: auto;
+}
+
+.nav-section-label {
+	font-family: var(--font-mono);
+	font-size: 10px;
+	text-transform: uppercase;
+	letter-spacing: 0.09em;
+	color: #6B7480;
+	padding: 6px 10px 4px;
+}
+
+.nav-link {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 12px;
+	border-radius: var(--radius-sm);
+	color: #C7CDD4;
+	font-size: 13px;
+	font-weight: 500;
+	border: 1px solid transparent;
+	transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.nav-link:hover {
+	background-color: var(--bg-sidebar-hover);
+	color: #FFFFFF;
+}
+
+.nav-link.active {
+	background-color: var(--bg-sidebar-active);
+	color: #FFFFFF;
+	border-color: rgba(255, 255, 255, 0.12);
+}
+
+.nav-link-badge {
+	margin-left: auto;
+	font-family: var(--font-mono);
+	font-size: 10.5px;
+	padding: 1px 6px;
+	border-radius: var(--radius-sm);
+	background-color: rgba(153, 27, 27, 0.35);
+	color: #FCA5A5;
+	border: 1px solid rgba(252, 165, 165, 0.3);
+}
+
+.sidebar-footer {
+	padding: 14px 16px;
+	border-top: 1px solid var(--border-sidebar);
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.sidebar-status-line {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-size: 11px;
+	color: var(--text-sidebar-muted);
+}
+
+.btn-reset-demo {
+	width: 100%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 7px;
+	padding: 8px 10px;
+	font-size: 12px;
+	font-weight: 500;
+	color: #C7CDD4;
+	background-color: transparent;
+	border: 1px solid var(--border-sidebar);
+	border-radius: var(--radius-sm);
+	cursor: pointer;
+	transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-reset-demo:hover {
+	background-color: var(--bg-sidebar-hover);
+	color: #FFFFFF;
+	border-color: #3B444D;
+}
+
+/* Main Workspace */
+.main-column {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.topbar {
+	height: var(--topbar-height);
+	background-color: var(--bg-surface);
+	border-bottom: 1px solid var(--border-subtle);
+	padding: 0 28px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	position: sticky;
+	top: 0;
+	z-index: 15;
+}
+
+.topbar-context {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-width: 0;
+}
+
+.topbar-crumb {
+	font-family: var(--font-mono);
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--text-secondary);
+}
+
+.topbar-divider {
+	width: 1px;
+	height: 16px;
+	background-color: var(--border-subtle);
+}
+
+.topbar-entity {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--text-primary);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.topbar-controls {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-shrink: 0;
+}
+
+.session-switcher {
+	display: inline-flex;
+	align-items: center;
+	background-color: var(--bg-canvas);
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-sm);
+	padding: 3px;
+	gap: 3px;
+}
+
+.session-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 5px 11px;
+	border: 1px solid transparent;
+	border-radius: 3px;
+	background: transparent;
+	color: var(--text-secondary);
+	font-size: 12px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.session-btn:hover {
+	color: var(--text-primary);
+}
+
+.session-btn.active-dpo {
+	background-color: var(--bg-surface);
+	color: var(--accent-legal);
+	border-color: var(--border-subtle);
+	font-weight: 600;
+}
+
+.session-btn.active-comercial {
+	background-color: var(--bg-surface);
+	color: var(--accent-alert);
+	border-color: var(--accent-alert-border);
+	font-weight: 600;
+}
+
+.content-container {
+	padding: 28px 32px 48px;
+	max-width: 1380px;
+	width: 100%;
+	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+}
+
+/* ==========================================================================
+   Encabezados Editoriales, Grillas y Tarjetas
+   ========================================================================== */
+
+.page-header {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 20px;
+	padding-bottom: 18px;
+	border-bottom: 1px solid var(--border-subtle);
+}
+
+.page-eyebrow {
+	font-family: var(--font-mono);
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--text-secondary);
+	margin-bottom: 6px;
+}
+
+.page-title {
+	font-family: var(--font-serif);
+	font-size: 30px;
+	font-weight: 600;
+	line-height: 1.15;
+	letter-spacing: -0.015em;
+	color: var(--text-primary);
+}
+
+.page-lead {
+	margin-top: 6px;
+	color: var(--text-secondary);
+	font-size: 14px;
+	max-width: 720px;
+}
+
+.card {
+	background-color: var(--bg-surface);
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-md);
+}
+
+.card-header {
+	padding: 16px 20px;
+	border-bottom: 1px solid var(--border-subtle);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.card-title {
+	font-family: var(--font-serif);
+	font-size: 18px;
+	font-weight: 600;
+	color: var(--text-primary);
+}
+
+.card-subtitle {
+	font-size: 12.5px;
+	color: var(--text-secondary);
+	margin-top: 2px;
+}
+
+.card-body {
+	padding: 20px;
+}
+
+/* Grilla Suiza 4 KPIs (Hairline Borders) */
+.swiss-kpi-grid {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	background-color: var(--bg-surface);
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-md);
+	overflow: hidden;
+}
+
+.kpi-cell {
+	padding: 18px 20px;
+	border-right: 1px solid var(--border-subtle);
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	gap: 10px;
+}
+
+.kpi-cell:last-child {
+	border-right: none;
+}
+
+.kpi-label {
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--text-secondary);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.kpi-value {
+	font-family: var(--font-serif);
+	font-size: 28px;
+	font-weight: 600;
+	line-height: 1.1;
+	color: var(--text-primary);
+}
+
+.kpi-value-compact {
+	font-family: var(--font-serif);
+	font-size: 23px;
+	font-weight: 600;
+	line-height: 1.15;
+	color: var(--text-primary);
+}
+
+.kpi-meta {
+	font-size: 12px;
+	color: var(--text-secondary);
+	line-height: 1.4;
+}
+
+/* ==========================================================================
+   Badges & Estados Institucionales
+   ========================================================================== */
+
+.badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 3px 8px;
+	font-size: 11.5px;
+	font-weight: 600;
+	border-radius: var(--radius-sm);
+	border: 1px solid transparent;
+	white-space: nowrap;
+}
+
+.badge-legal {
+	background-color: var(--accent-legal-bg);
+	color: var(--accent-legal);
+	border-color: var(--accent-legal-border);
+}
+
+.badge-alert {
+	background-color: var(--accent-alert-bg);
+	color: var(--accent-alert);
+	border-color: var(--accent-alert-border);
+}
+
+.badge-danger {
+	background-color: var(--accent-danger-bg);
+	color: var(--accent-danger);
+	border-color: var(--accent-danger-border);
+}
+
+.badge-neutral {
+	background-color: var(--bg-canvas);
+	color: var(--text-secondary);
+	border-color: var(--border-subtle);
+}
+
+/* ==========================================================================
+   Botones
+   ========================================================================== */
+
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 9px 15px;
+	font-size: 13px;
+	font-weight: 600;
+	border-radius: var(--radius-sm);
+	border: 1px solid transparent;
+	cursor: pointer;
+	transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+	white-space: nowrap;
+}
+
+.btn:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+
+.btn-primary {
+	background-color: var(--accent-legal);
+	color: #FFFFFF;
+	border-color: var(--accent-legal);
+}
+
+.btn-primary:hover:not(:disabled) {
+	background-color: var(--accent-legal-hover);
+}
+
+.btn-secondary {
+	background-color: var(--bg-surface);
+	color: var(--text-primary);
+	border-color: var(--border-strong);
+}
+
+.btn-secondary:hover:not(:disabled) {
+	background-color: var(--bg-canvas);
+}
+
+.btn-danger {
+	background-color: var(--accent-danger);
+	color: #FFFFFF;
+	border-color: var(--accent-danger);
+}
+
+.btn-danger:hover:not(:disabled) {
+	background-color: #7F1D1D;
+}
+
+.btn-sm {
+	padding: 6px 10px;
+	font-size: 12px;
+}
+
+/* ==========================================================================
+   Tablas Estructuradas
+   ========================================================================== */
+
+.table-wrap {
+	width: 100%;
+	overflow-x: auto;
+}
+
+.data-table {
+	width: 100%;
+	border-collapse: collapse;
+	text-align: left;
+}
+
+.data-table th {
+	padding: 11px 16px;
+	font-family: var(--font-mono);
+	font-size: 11px;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--text-secondary);
+	background-color: var(--bg-surface-muted);
+	border-bottom: 1px solid var(--border-subtle);
+	white-space: nowrap;
+}
+
+.data-table td {
+	padding: 13px 16px;
+	border-bottom: 1px solid var(--border-subtle);
+	vertical-align: top;
+	font-size: 13px;
+}
+
+.data-table tbody tr:last-child td {
+	border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+	background-color: #FCFBF9;
+}
+
+/* ==========================================================================
+   Formularios
+   ========================================================================== */
+
+.form-grid {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+
+.field-label {
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--text-primary);
+}
+
+.input,
+.select,
+.textarea {
+	width: 100%;
+	padding: 9px 12px;
+	background-color: var(--bg-surface);
+	border: 1px solid var(--border-strong);
+	border-radius: var(--radius-sm);
+	font-size: 13.5px;
+	color: var(--text-primary);
+	transition: border-color 0.15s ease;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+	outline: none;
+	border-color: var(--accent-legal);
+}
+
+.checkbox-card {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	padding: 11px 12px;
+	border: 1px solid var(--border-subtle);
+	border-radius: var(--radius-sm);
+	background-color: var(--bg-surface-muted);
+	cursor: pointer;
+	transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.checkbox-card:hover {
+	border-color: var(--border-strong);
+}
+
+.checkbox-card.checked {
+	border-color: var(--accent-legal-border);
+	background-color: var(--accent-legal-bg);
+}
+
+.checkbox-card input[type='checkbox'] {
+	margin-top: 2px;
+	width: 16px;
+	height: 16px;
+	accent-color: var(--accent-legal);
+	flex-shrink: 0;
+	cursor: pointer;
+}
+
+/* ==========================================================================
+   Alertas y Banners
+   ========================================================================== */
+
+.alert-banner {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 14px 18px;
+	border-radius: var(--radius-md);
+	border: 1px solid var(--border-subtle);
+}
+
+.alert-banner.danger {
+	background-color: var(--accent-danger-bg);
+	border-color: var(--accent-danger-border);
+	color: var(--accent-danger);
+}
+
+.alert-banner.alert {
+	background-color: var(--accent-alert-bg);
+	border-color: var(--accent-alert-border);
+	color: var(--accent-alert);
+}
+
+.alert-banner.legal {
+	background-color: var(--accent-legal-bg);
+	border-color: var(--accent-legal-border);
+	color: var(--accent-legal);
+}
+
+/* ==========================================================================
+   Modal & Vista Oficial Imprimible (@media print)
+   ========================================================================== */
+
+.modal-backdrop {
+	position: fixed;
+	inset: 0;
+	background-color: rgba(18, 22, 25, 0.62);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	z-index: 50;
+}
+
+.modal-sheet {
+	background-color: var(--bg-surface);
+	border: 1px solid var(--border-strong);
+	border-radius: var(--radius-md);
+	width: 100%;
+	max-width: 900px;
+	max-height: 90vh;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.modal-toolbar {
+	padding: 14px 20px;
+	border-bottom: 1px solid var(--border-subtle);
+	background-color: var(--bg-surface-muted);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.modal-scroll {
+	padding: 28px 34px;
+	overflow-y: auto;
+	background-color: #FFFFFF;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+	.swiss-kpi-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.kpi-cell:nth-child(2) {
+		border-right: none;
+	}
+
+	.kpi-cell:nth-child(1),
+	.kpi-cell:nth-child(2) {
+		border-bottom: 1px solid var(--border-subtle);
+	}
+}
+
+@media (max-width: 860px) {
+	.app-shell {
+		grid-template-columns: 1fr;
+	}
+
+	.sidebar {
+		position: static;
+		height: auto;
+	}
+
+	.topbar {
+		padding: 12px 16px;
+		height: auto;
+		flex-wrap: wrap;
+	}
+
+	.content-container {
+		padding: 20px 16px 36px;
+	}
+
+	.page-header {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+}
+
+@media (max-width: 600px) {
+	.swiss-kpi-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.kpi-cell {
+		border-right: none;
+		border-bottom: 1px solid var(--border-subtle);
+	}
+
+	.kpi-cell:last-child {
+		border-bottom: none;
+	}
+}
+
+/* ==========================================================================
+   Impresión Limpia para Dossier de Fiscalización
+   ========================================================================== */
+
+@media print {
+	@page {
+		margin: 14mm;
+		size: A4 portrait;
+	}
+
+	body {
+		background-color: #FFFFFF !important;
+		color: #121619 !important;
+	}
+
+	.no-print,
+	.sidebar,
+	.topbar,
+	.modal-toolbar {
+		display: none !important;
+	}
+
+	.app-shell {
+		display: block !important;
+	}
+
+	.modal-backdrop {
+		position: static !important;
+		background: transparent !important;
+		padding: 0 !important;
+		display: block !important;
+	}
+
+	.modal-sheet {
+		border: none !important;
+		max-height: none !important;
+		max-width: none !important;
+		overflow: visible !important;
+	}
+
+	.modal-scroll {
+		padding: 0 !important;
+		overflow: visible !important;
+	}
+}
